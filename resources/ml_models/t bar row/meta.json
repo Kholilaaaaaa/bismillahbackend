@@ -1,0 +1,11 @@
+{
+  "timesteps": 20,
+  "features": 103,
+  "threshold": 0.2776612937450409,
+  "training_samples": 2344,
+  "class_distribution": {
+    "class_0": 1172,
+    "class_1": 1172
+  },
+  "note": "With data augmentation & balanced classes"
+}

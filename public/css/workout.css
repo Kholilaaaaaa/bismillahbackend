@@ -1,0 +1,483 @@
+/* Workout Management Specific Styles */
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: capitalize;
+}
+
+.badge-belum {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #4b5563;
+    border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.badge-sedang-dilakukan {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.badge-selesai {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Category Badges */
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.badge-without-equipment {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.badge-with-equipment {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* Exercise Count */
+.exercise-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background-color: #f8fafc;
+    color: var(--text-dark);
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* Equipment Display */
+.equipment-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background-color: #f1f5f9;
+    color: var(--text-dark);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Workout Cards */
+.workout-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.workout-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.workout-card .workout-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.workout-card .workout-body {
+    padding: 1.25rem;
+}
+
+.workout-card .workout-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Table Styles */
+.table-workout tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table-workout tbody tr:hover {
+    background: rgba(175, 105, 238, 0.05);
+}
+
+.table-workout .workout-name-cell {
+    min-width: 200px;
+}
+
+.table-workout .workout-description-cell {
+    min-width: 250px;
+    max-width: 300px;
+}
+
+.table-workout .workout-equipment-cell {
+    min-width: 150px;
+}
+
+.table-workout .workout-exercises-cell {
+    min-width: 100px;
+}
+
+/* Workout Detail */
+.workout-detail {
+    background: #f8fafc;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    min-width: 120px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.detail-value {
+    flex: 1;
+    color: var(--text-dark);
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+}
+
+/* Description Display */
+.description-display {
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #64748b;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .table-workout .workout-description-cell {
+        min-width: 150px;
+        max-width: 200px;
+    }
+    
+    .equipment-display {
+        max-width: 150px;
+    }
+}
+
+/* Empty State */
+.empty-workout {
+    text-align: center;
+    padding: 3rem;
+    background: #f8fafc;
+    border-radius: var(--border-radius);
+    border: 2px dashed #e2e8f0;
+}
+
+.empty-workout i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+}
+
+.empty-workout h5 {
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.empty-workout p {
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+/* Modal Styles */
+.modal-workout .modal-header {
+    background: linear-gradient(90deg, #f8fafc, white);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-workout .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Form Styles */
+.form-label {
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.input-group-text {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+    color: var(--text-dark);
+}
+
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(175, 105, 238, 0.25);
+    border-color: var(--primary-color);
+}
+
+/* Exercise Input */
+.exercise-input {
+    position: relative;
+}
+
+.exercise-input .input-group-text {
+    min-width: 140px;
+    justify-content: center;
+}
+
+/* Description Textarea */
+.description-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Status Selector */
+.status-selector .form-select {
+    cursor: pointer;
+}
+
+/* Category Selector */
+.category-selector .form-select {
+    cursor: pointer;
+}
+
+/* Equipment Input */
+.equipment-input .form-control {
+    padding-right: 2.5rem;
+}
+
+.equipment-input i {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+/* Loading States */
+.loading-workout {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading-workout .workout-card {
+    animation: pulse 1.5s infinite;
+}
+
+/* Animation for Status Change */
+@keyframes status-change {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.status-badge.sedang-dilakukan {
+    animation: status-change 2s infinite;
+}
+
+/* Hover Effects */
+.workout-card .workout-actions {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.workout-card:hover .workout-actions {
+    opacity: 1;
+}
+
+/* Print Styles */
+@media print {
+    .workout-card {
+        break-inside: avoid;
+        border: 1px solid #000;
+    }
+    
+    .btn, .pagination {
+        display: none;
+    }
+}
+
+/* Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+    .workout-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    .workout-card .workout-header {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    
+    .exercise-count {
+        background: #334155;
+        color: #e2e8f0;
+        border-color: #475569;
+    }
+    
+    .equipment-display {
+        background: #334155;
+        color: #e2e8f0;
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .quick-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .exercise-input .input-group-text {
+        min-width: 120px;
+        font-size: 0.85rem;
+    }
+    
+    .table-workout {
+        font-size: 0.85rem;
+    }
+}
+
+/* Dropdown Styling */
+.jadwal-dropdown option {
+    padding: 0.5rem;
+}
+
+.jadwal-dropdown option:disabled {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Error Message */
+.error-message {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    color: #dc2626;
+}
+
+/* Success Message */
+.success-message {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    color: #059669;
+}
+
+.pagination-container {
+    padding: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.pagination {
+    margin: 0;
+    justify-content: center;
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.page-link {
+    color: var(--primary-color);
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 0.75rem;
+    margin: 0 0.2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover {
+    background-color: rgba(175, 105, 238, 0.1);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.page-item.disabled .page-link {
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+.pagination-info {
+    color: #64748b;
+    font-size: 0.9rem;
+}

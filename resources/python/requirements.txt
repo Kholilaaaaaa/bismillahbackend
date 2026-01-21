@@ -1,0 +1,19 @@
+# Deep Learning & ML
+tensorflow>=2.12.0
+keras>=2.12.0
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.2.0
+
+# Video/Image Processing
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+Pillow>=9.5.0
+
+# Utilities
+joblib>=1.2.0
+h5py>=3.8.0
+pyyaml>=6.0
+
+# Specific for pose estimation
+matplotlib>=3.7.0  # untuk visualisasi jika diperlukan

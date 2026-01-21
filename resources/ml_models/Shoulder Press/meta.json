@@ -1,0 +1,6 @@
+{
+  "timesteps": 20,
+  "features": 103,
+  "threshold": 0.6580744981765747,
+  "note": "stabilized + label smoothing + clipped threshold"
+}
