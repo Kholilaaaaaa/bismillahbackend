@@ -3,7 +3,7 @@
 @section('title', 'Manajemen Admin - Gym GenZ Admin')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/manajemen-admin.css') }}">
+   <link rel="stylesheet" href="https://hemicranic-justus-jauntily.ngrok-free.dev/css/manajemen-pengguna.css">
     <style>
         .search-input-container {
             position: relative;

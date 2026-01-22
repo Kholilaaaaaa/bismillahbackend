@@ -3,7 +3,7 @@
 @section('title', 'Dashboard - Gym GenZ Admin')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="https://hemicranic-justus-jauntily.ngrok-free.dev/css/dashboard.css">
 @endpush
 
 @push('scripts')

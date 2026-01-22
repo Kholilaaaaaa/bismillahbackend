@@ -1,0 +1,182 @@
+/* ===============================
+   MANJEMEN CHATBOT (ADMIN)
+   Uses app.css variables
+================================ */
+
+.manajemen-chatbot-page {
+    padding-bottom: 2rem;
+}
+
+/* ===============================
+   HEADER
+================================ */
+.manajemen-chatbot-page h4 {
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+.manajemen-chatbot-page .text-muted {
+    color: #64748b !important;
+}
+
+/* ===============================
+   CARD OVERRIDE
+================================ */
+.manajemen-chatbot-page .card {
+    border-radius: var(--border-radius);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    border: none;
+}
+
+.manajemen-chatbot-page .card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+}
+
+.manajemen-chatbot-page .card-footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* ===============================
+   STAT CARDS
+================================ */
+.manajemen-chatbot-page .card-body h6 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+.manajemen-chatbot-page .card-body h3 {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+.manajemen-chatbot-page .btn-primary {
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--primary-dark)
+    );
+    border: none;
+}
+
+.manajemen-chatbot-page .btn-outline-secondary {
+    border-color: #e5e7eb;
+    color: #475569;
+}
+
+.manajemen-chatbot-page .btn-outline-secondary:hover {
+    background-color: #f1f5f9;
+}
+
+/* ===============================
+   SEARCH
+================================ */
+.manajemen-chatbot-page .search-input-container {
+    position: relative;
+    width: 320px;
+}
+
+.manajemen-chatbot-page .search-input-container input {
+    padding-left: 40px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+}
+
+.manajemen-chatbot-page .search-input-container i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+/* ===============================
+   TABLE
+================================ */
+.manajemen-chatbot-page .table {
+    background: white;
+    margin-bottom: 0;
+}
+
+.manajemen-chatbot-page .table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    background-color: var(--light-bg);
+}
+
+.manajemen-chatbot-page .table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.manajemen-chatbot-page .table td {
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+/* ===============================
+   BADGE
+================================ */
+.manajemen-chatbot-page .badge {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #1e40af;
+    border-radius: 999px;
+    font-weight: 500;
+}
+
+/* Loading spinner */
+.spinner-border.text-primary {
+    color: var(--primary-color) !important;
+}
+
+/* Badge styles */
+.manajemen-chatbot-page .badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.manajemen-chatbot-page .badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.manajemen-chatbot-page .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* ===============================
+   EMPTY STATE
+================================ */
+.manajemen-chatbot-page .no-data {
+    padding: 3rem;
+    text-align: center;
+    color: #94a3b8;
+}
+
+.manajemen-chatbot-page .no-data i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+@media (max-width: 768px) {
+    .manajemen-chatbot-page .search-input-container {
+        width: 100%;
+    }
+
+    .manajemen-chatbot-page .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+}

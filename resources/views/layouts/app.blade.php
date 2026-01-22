@@ -19,7 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="http://hemicranic-justus-jauntily.ngrok-free.dev/css/app.css">
     @stack('styles')
     
     <!-- Toast Notification Styles -->

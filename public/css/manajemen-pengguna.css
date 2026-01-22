@@ -1,79 +1,90 @@
-/* Manajemen Pengguna Specific Styles */
+/* =========================================
+   MANAJEMEN CHATBOT – SPECIFIC STYLES
+   ========================================= */
 
-/* Avatar Styles */
-.pengguna-avatar {
+/* =========================================
+   Chatbot Avatar / Icon
+   ========================================= */
+.chatbot-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #7c3aed);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #ffffff;
     font-weight: 600;
     font-size: 0.9rem;
     margin: 0 auto;
 }
 
-.pengguna-avatar-large {
+.chatbot-avatar-large {
     width: 100px;
     height: 100px;
     border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #7c3aed);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #ffffff;
     font-weight: 700;
     font-size: 1.8rem;
     margin: 0 auto;
 }
 
-/* Detail Modal Styles */
-.detail-info {
+/* =========================================
+   Detail Chatbot / Knowledge Modal
+   ========================================= */
+.chatbot-detail {
     padding: 1.5rem;
     background: #f8fafc;
     border-radius: var(--border-radius);
     margin-bottom: 1.5rem;
 }
 
-.detail-item {
+.chatbot-detail-item {
     display: flex;
     justify-content: space-between;
     padding: 0.75rem 0;
     border-bottom: 1px solid #e2e8f0;
 }
 
-.detail-item:last-child {
+.chatbot-detail-item:last-child {
     border-bottom: none;
 }
 
-.detail-label {
+.chatbot-detail-label {
     font-weight: 500;
     color: var(--text-dark);
 }
 
-.detail-value {
+.chatbot-detail-value {
     color: var(--text-light);
     text-align: right;
 }
 
-.detail-value.text-success {
+/* Status Coloring */
+.chatbot-detail-value.text-success {
     color: var(--success-color) !important;
 }
 
-.detail-value.text-warning {
+.chatbot-detail-value.text-warning {
     color: var(--warning-color) !important;
 }
 
-.detail-value.text-danger {
+.chatbot-detail-value.text-danger {
     color: var(--danger-color) !important;
 }
 
-.detail-value.text-info {
+.chatbot-detail-value.text-info {
     color: var(--info-color) !important;
 }
 
-/* BMI Indicator */
-.bmi-indicator {
+/* =========================================
+   Chatbot Status Indicator
+   ========================================= */
+.chatbot-status {
     display: inline-block;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
@@ -81,27 +92,24 @@
     font-weight: 500;
 }
 
-.bmi-underweight {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-
-.bmi-normal {
+.chatbot-active {
     background-color: rgba(16, 185, 129, 0.1);
     color: var(--success-color);
 }
 
-.bmi-overweight {
+.chatbot-training {
     background-color: rgba(245, 158, 11, 0.1);
     color: var(--warning-color);
 }
 
-.bmi-obesity {
+.chatbot-inactive {
     background-color: rgba(239, 68, 68, 0.1);
     color: var(--danger-color);
 }
 
-/* Table Actions */
+/* =========================================
+   Table Action Buttons
+   ========================================= */
 .table .btn-sm {
     width: 32px;
     height: 32px;
@@ -116,7 +124,9 @@
     font-size: 0.9rem;
 }
 
-/* Status Badges */
+/* =========================================
+   Badge Styles
+   ========================================= */
 .badge.bg-success,
 .badge.bg-warning,
 .badge.bg-danger,
@@ -128,27 +138,15 @@
     font-size: 0.8rem;
 }
 
-.badge.bg-success {
-    background-color: var(--success-color) !important;
-}
+.badge.bg-success { background-color: var(--success-color) !important; }
+.badge.bg-warning { background-color: var(--warning-color) !important; }
+.badge.bg-danger  { background-color: var(--danger-color) !important; }
+.badge.bg-purple  { background-color: var(--primary-color) !important; }
+.badge.bg-info    { background-color: var(--info-color) !important; }
 
-.badge.bg-warning {
-    background-color: var(--warning-color) !important;
-}
-
-.badge.bg-danger {
-    background-color: var(--danger-color) !important;
-}
-
-.badge.bg-purple {
-    background-color: var(--primary-color) !important;
-}
-
-.badge.bg-info {
-    background-color: var(--info-color) !important;
-}
-
-/* Modal Styles */
+/* =========================================
+   Modal Global
+   ========================================= */
 .modal-content {
     border: none;
     border-radius: var(--border-radius);
@@ -156,7 +154,7 @@
 }
 
 .modal-header {
-    background: linear-gradient(90deg, #f8fafc, white);
+    background: linear-gradient(90deg, #f8fafc, #ffffff);
     border-bottom: 1px solid #e2e8f0;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     padding: 1.5rem;
@@ -172,32 +170,51 @@
     color: var(--text-dark);
 }
 
-/* Detail Modal Header */
-.detail-modal-header {
+/* =========================================
+   Modal Header (Detail)
+   ========================================= */
+.chatbot-modal-header {
     text-align: center;
     padding: 2rem 1.5rem 1rem;
 }
 
-/* Card Footer */
+/* =========================================
+   Card Footer
+   ========================================= */
 .card-footer {
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
     padding: 1rem 1.5rem;
 }
 
-/* Search Input */
+/* =========================================
+   Search Input
+   ========================================= */
+.search-input-container {
+    position: relative;
+    width: 400px;
+}
+
+.search-input-container i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.search-input-container input {
+    padding-left: 40px;
+}
+
 .input-group .form-control:focus {
     box-shadow: none;
     border-color: var(--primary-color);
 }
 
-.input-group .btn-outline-dark:hover {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-}
-
-/* Stats Cards Icons */
+/* =========================================
+   Stats Icon
+   ========================================= */
 .icon-container {
     width: 50px;
     height: 50px;
@@ -208,7 +225,7 @@
 }
 
 .bg-purple-light {
-    background-color: rgba(175, 105, 238, 0.1);
+    background-color: rgba(99, 102, 241, 0.1);
 }
 
 .bg-success-light {
@@ -223,7 +240,9 @@
     background-color: rgba(239, 68, 68, 0.1);
 }
 
-/* Toast Notifications */
+/* =========================================
+   Toast Notification
+   ========================================= */
 .toast-notification {
     position: fixed;
     top: 20px;
@@ -232,11 +251,7 @@
     border-radius: var(--border-radius);
     padding: 1rem 1.5rem;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     min-width: 300px;
-    max-width: 400px;
     transform: translateX(120%);
     transition: transform 0.3s ease;
     z-index: 9999;
@@ -247,279 +262,71 @@
     transform: translateX(0);
 }
 
-.toast-notification.toast-success {
-    border-left-color: var(--success-color);
-}
+.toast-success { border-left-color: var(--success-color); }
+.toast-warning { border-left-color: var(--warning-color); }
+.toast-info    { border-left-color: var(--info-color); }
 
-.toast-notification.toast-warning {
-    border-left-color: var(--warning-color);
-}
-
-.toast-notification.toast-info {
-    border-left-color: var(--info-color);
-}
-
-.toast-content {
-    display: flex;
-    align-items: center;
-    color: var(--text-dark);
-}
-
-.toast-content i {
-    font-size: 1.2rem;
-}
-
-.toast-success .toast-content i {
-    color: var(--success-color);
-}
-
-.toast-warning .toast-content i {
-    color: var(--warning-color);
-}
-
-.toast-info .toast-content i {
-    color: var(--info-color);
-}
-
-.toast-close {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 0;
-    margin-left: 1rem;
-    transition: color 0.3s ease;
-}
-
-.toast-close:hover {
-    color: var(--danger-color);
-}
-
-/* Delete Modal Specific */
-#deleteConfirmModal .modal-content {
+/* =========================================
+   Delete Confirmation Modal
+   ========================================= */
+#deleteChatbotModal .modal-content {
     border-top: 4px solid var(--danger-color);
 }
 
-#deleteConfirmModal .modal-body {
+#deleteChatbotModal .modal-body {
     padding: 2rem 1.5rem;
 }
 
-/* Responsive Table */
-@media (max-width: 768px) {
-    .table-responsive {
-        font-size: 0.9rem;
-    }
-    
-    .pengguna-avatar {
-        width: 35px;
-        height: 35px;
-        font-size: 0.8rem;
-    }
-    
-    .table .btn-sm {
-        width: 28px;
-        height: 28px;
-    }
-    
-    .modal-dialog {
-        margin: 1rem;
-    }
-    
-    .pengguna-avatar-large {
-        width: 80px;
-        height: 80px;
-        font-size: 1.5rem;
-    }
-    
-    .toast-notification {
-        min-width: 250px;
-        max-width: 300px;
-        right: 10px;
-        left: 10px;
-        margin: 0 auto;
-    }
-    
-    .detail-info {
-        padding: 1rem;
-    }
-    
-    .detail-item {
-        flex-direction: column;
-        gap: 0.25rem;
-        padding: 0.5rem 0;
-    }
-    
-    .detail-value {
-        text-align: left;
-    }
-}
-
-/* Hover Effects */
+/* =========================================
+   Hover & Loading
+   ========================================= */
 .table tbody tr {
     transition: all 0.3s ease;
 }
 
 .table tbody tr:hover {
-    background: rgba(175, 105, 238, 0.05);
+    background: rgba(99, 102, 241, 0.05);
 }
 
-/* Loading Animation */
 .fa-spinner {
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    from { transform: rotate(0); }
+    to   { transform: rotate(360deg); }
 }
 
-/* Error States */
-.form-control.is-invalid {
-    border-color: var(--danger-color);
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right calc(0.375em + 0.1875rem) center;
-    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    padding-right: calc(1.5em + 0.75rem);
-}
-
-.form-control.is-invalid:focus {
-    border-color: var(--danger-color);
-    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
-}
-
-.error-message {
-    font-size: 0.875rem;
-    color: var(--danger-color);
-    margin-top: 0.25rem;
-}
-
-/* Pagination Styles */
+/* =========================================
+   Pagination
+   ========================================= */
 .pagination-container {
     padding: 1.5rem;
     border-top: 1px solid #e2e8f0;
     background: #f8fafc;
 }
 
-.pagination {
-    margin: 0;
-    justify-content: center;
-}
-
 .page-item.active .page-link {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    color: white;
+    color: #ffffff;
 }
 
 .page-link {
     color: var(--primary-color);
-    border: 1px solid #e2e8f0;
-    padding: 0.5rem 0.75rem;
-    margin: 0 0.2rem;
     border-radius: 8px;
-    transition: all 0.3s ease;
 }
 
-.page-link:hover {
-    background-color: rgba(175, 105, 238, 0.1);
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+/* =========================================
+   Responsive
+   ========================================= */
+@media (max-width: 768px) {
+    .chatbot-avatar { width: 35px; height: 35px; font-size: 0.8rem; }
+    .chatbot-avatar-large { width: 80px; height: 80px; font-size: 1.5rem; }
+    .table-responsive { font-size: 0.9rem; }
 }
 
-.page-item.disabled .page-link {
-    color: #94a3b8;
-    background-color: #f8fafc;
-    border-color: #e2e8f0;
-}
-
-.pagination-info {
-    color: #64748b;
-    font-size: 0.9rem;
-}
-
-/* Enhanced Responsive Design */
 @media (max-width: 576px) {
-    .search-input-container {
-        width: 100% !important;
-    }
-    
-    .d-flex.justify-content-between.align-items-center.mb-4 {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start !important;
-    }
-    
-    .table thead {
-        display: none;
-    }
-    
-    .table tbody tr {
-        display: block;
-        margin-bottom: 1rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        background: white;
-    }
-    
-    .table tbody td {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.75rem 1rem;
-        border: none;
-        border-bottom: 1px solid #f1f5f9;
-    }
-    
-    .table tbody td:last-child {
-        border-bottom: none;
-    }
-    
-    .table tbody td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-right: 1rem;
-        flex: 1;
-    }
-    
-    .table tbody td:first-child {
-        display: none;
-    }
-    
-    .table tbody .d-flex.gap-2 {
-        justify-content: flex-end;
-    }
-    
-    .modal-dialog.modal-lg {
-        margin: 0.5rem;
-    }
-    
-    .detail-modal-header {
-        padding: 1rem 0.5rem;
-    }
-    
-    .pagination-container {
-        padding: 1rem;
-    }
-    
-    .pagination .page-link {
-        padding: 0.375rem 0.5rem;
-        font-size: 0.8rem;
-        margin: 0 0.1rem;
-    }
-}
-
-@media (min-width: 577px) and (max-width: 768px) {
-    .search-input-container {
-        width: 300px;
-    }
-    
-    .table th, .table td {
-        padding: 0.75rem 0.5rem;
-    }
-    
-    .modal-dialog.modal-lg {
-        max-width: 95%;
-        margin: 1rem auto;
-    }
+    .search-input-container { width: 100%; }
+    .modal-dialog { margin: 0.75rem; }
 }

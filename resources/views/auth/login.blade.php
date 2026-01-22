@@ -82,5 +82,5 @@
 @endpush
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    <link rel="stylesheet" href="https://hemicranic-justus-jauntily.ngrok-free.dev/css/login.css">
 @endpush

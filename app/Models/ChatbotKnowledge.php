@@ -9,17 +9,15 @@ class ChatbotKnowledge extends Model
 {
     use HasFactory;
 
-    /**
-     * Nama tabel (karena bukan bentuk jamak default Laravel)
-     */
     protected $table = 'chatbot_knowledge';
 
-    /**
-     * Kolom yang boleh diisi mass assignment
-     */
     protected $fillable = [
         'question',
         'answer',
+        'category',
+        'tags',
         'source',
+        'model_type',
+        'is_active',
     ];
 }

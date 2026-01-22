@@ -13,9 +13,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
+
 class DetailWorkoutController extends Controller
 {
-    protected $mlService;
+    protected $realtimeMlService;
     
     // Session storage directory
     protected $sessionStoragePath;
@@ -27,6 +28,7 @@ class DetailWorkoutController extends Controller
     public function __construct(MlService $mlService)
     {
         $this->mlService = $mlService;
+        $this->realtimeMlService = new \App\Services\RealtimeMlService(); // Tambah ini
         $this->sessionStoragePath = storage_path('sessions');
         
         // Create directory if not exists
@@ -34,7 +36,6 @@ class DetailWorkoutController extends Controller
             mkdir($this->sessionStoragePath, 0777, true);
         }
         
-        // Tambahkan middleware auth.token untuk semua method kecuali test
         $this->middleware('auth.token')->except(['testConnection']);
     }
 
@@ -48,143 +49,682 @@ class DetailWorkoutController extends Controller
      * Process single camera frame for real-time feedback
      * Endpoint: POST /api/detailworkout/process-frame
      */
-    public function processCameraFrame(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'frame_data' => 'required|array',
-            'expected_exercise' => 'required|string|in:pushup,shoulder_press,t_bar_row',
-            'workout_id' => 'nullable|exists:workouts,id',
-            'session_id' => 'nullable|string',
-            'frame_timestamp' => 'nullable|numeric',
-            'frame_index' => 'nullable|integer'
+    /**
+ * Get all available exercise options
+ * Endpoint: GET /api/detailworkout/exercise-options
+ */
+public function getExerciseOptions(Request $request)
+{
+    try {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $exercises = [
+            [
+                'id' => 'pushup',
+                'name' => 'Push Up',
+                'description' => 'Latihan untuk dada, bahu, dan trisep',
+                'target_muscles' => ['Chest', 'Shoulders', 'Triceps'],
+                'difficulty' => 'Beginner',
+                'icon' => 'fa-person-running',
+                'color' => '#AF69EE',
+                'instructions' => [
+                    'Mulai dengan posisi plank, tangan selebar bahu',
+                    'Turunkan tubuh hingga dada hampir menyentuh lantai',
+                    'Dorong kembali ke posisi awal',
+                    'Jaga tubuh tetap lurus dari kepala hingga kaki'
+                ],
+                'target_reps' => 12,
+                'rest_time' => 60
+            ],
+            [
+                'id' => 'shoulder_press',
+                'name' => 'Shoulder Press',
+                'description' => 'Latihan untuk bahu dan trisep',
+                'target_muscles' => ['Shoulders', 'Triceps', 'Upper Chest'],
+                'difficulty' => 'Intermediate',
+                'icon' => 'fa-weight-hanging',
+                'color' => '#4FC3F7',
+                'instructions' => [
+                    'Duduk di bangku dengan punggung lurus',
+                    'Pegang barbell/dumbbell setinggi bahu',
+                    'Angkat beban ke atas hingga lengan lurus',
+                    'Turunkan kembali dengan terkontrol',
+                    'Jaga siku tetap di depan tubuh'
+                ],
+                'target_reps' => 10,
+                'rest_time' => 90
+            ],
+            [
+                'id' => 't_bar_row',
+                'name' => 'T Bar Row',
+                'description' => 'Latihan untuk punggung dan biceps',
+                'target_muscles' => ['Back', 'Biceps', 'Rear Delts'],
+                'difficulty' => 'Intermediate',
+                'icon' => 'fa-dumbbell',
+                'color' => '#81C784',
+                'instructions' => [
+                    'Berdiri di atas T-bar row machine',
+                    'Pegang pegangan dengan kedua tangan',
+                    'Tarik beban ke arah dada',
+                    'Remas otot punggung di posisi atas',
+                    'Turunkan kembali dengan terkontrol',
+                    'Jaga punggung tetap lurus'
+                ],
+                'target_reps' => 10,
+                'rest_time' => 75
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'exercises' => $exercises,
+                'total_exercises' => count($exercises),
+                'user_id' => $user->id
+            ]
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
+    } catch (\Exception $e) {
+        Log::error('Get exercise options error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to get exercise options',
+            'error' => env('APP_DEBUG') ? $e->getMessage() : 'Internal server error'
+        ], 500);
+    }
+}
 
-        try {
-            $user = Auth::user();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not authenticated'
-                ], 401);
-            }
+/**
+ * Start specific exercise detection
+ * Endpoint: POST /api/detailworkout/start-exercise
+ */
+public function startExerciseDetection(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'exercise_type' => 'required|string|in:pushup,shoulder_press,t_bar_row',
+        'workout_id' => 'required|exists:workouts,id',
+        'session_id' => 'nullable|string',
+        'target_reps' => 'nullable|integer|min:1|max:50',
+        'sets' => 'nullable|integer|min:1|max:10'
+    ]);
 
-            $rawFrameData = $request->frame_data;
-            $expectedExercise = $request->expected_exercise;
-            $workoutId = $request->workout_id;
-            $sessionId = $request->session_id;
-            $frameTimestamp = $request->frame_timestamp ?? microtime(true);
-            $frameIndex = $request->frame_index ?? 0;
-
-            // Standardize frame data format untuk ML Service
-            $standardizedData = $this->standardizeFrameData($rawFrameData);
-            
-            Log::debug('Processing camera frame', [
-                'user_id' => $user->id,
-                'expected_exercise' => $expectedExercise,
-                'original_data_type' => $this->getDataType($rawFrameData),
-                'standardized_type' => $this->getDataType($standardizedData),
-                'has_pose_landmarks' => isset($standardizedData['pose_landmarks']),
-                'landmarks_count' => isset($standardizedData['pose_landmarks']) ? count($standardizedData['pose_landmarks']) : 0,
-                'frame_timestamp' => $frameTimestamp,
-                'workout_id' => $workoutId,
-                'session_id' => $sessionId
-            ]);
-
-            // Process frame dengan ML Service
-            $startTime = microtime(true);
-            $result = $this->mlService->processRealTimeFrame($standardizedData, $expectedExercise);
-            $processingTime = round((microtime(true) - $startTime) * 1000, 2); // ms
-
-            // Validasi result dari ML Service
-            if (!isset($result['success'])) {
-                $result['success'] = false;
-                $result['error'] = 'Invalid response from ML service';
-            }
-
-            // Jika ada session_id, update session data
-            if ($sessionId) {
-                $this->updateSessionFrame($sessionId, $frameIndex, $result);
-            }
-
-            // Generate user feedback
-            $userFeedback = $this->generateRealTimeFeedback($result);
-
-            // Format response untuk real-time feedback
-            $response = [
-                'success' => $result['success'] ?? false,
-                'frame_analysis' => $result['frame_analysis'] ?? null,
-                'feedback' => $result['feedback'] ?? null,
-                'user_feedback' => $userFeedback,
-                'frame_info' => [
-                    'timestamp' => $frameTimestamp,
-                    'index' => $frameIndex,
-                    'processing_time_ms' => $processingTime,
-                    'total_time_ms' => round((microtime(true) - LARAVEL_START) * 1000, 2),
-                    'data_type' => $this->getDataType($rawFrameData),
-                    'standardized' => $this->getDataType($standardizedData)
-                ],
-                'exercise_detected' => $result['frame_analysis']['prediction']['exercise_detected'] ?? $expectedExercise,
-                'is_correct_exercise' => $result['frame_analysis']['prediction']['is_correct_exercise'] ?? true,
-                'confidence_score' => $result['frame_analysis']['confidence_score'] ?? 0.7,
-                'form_issues' => $result['frame_analysis']['form_check']['issues'] ?? [],
-                'rep_info' => $result['frame_analysis']['rep_detection'] ?? null,
-                'session_updated' => $sessionId ? true : false
-            ];
-
-            // Jika ada rep completed, tambahkan info
-            if (isset($result['frame_analysis']['rep_detection']['rep_completed']) && 
-                $result['frame_analysis']['rep_detection']['rep_completed']) {
-                $response['rep_completed'] = true;
-                $response['total_reps'] = $result['frame_analysis']['rep_detection']['total_reps'] ?? 0;
-                
-                // Jika ada workout_id, bisa langsung simpan rep
-                if ($workoutId && $sessionId) {
-                    $this->handleRepCompletion($user->id, $workoutId, $sessionId, $expectedExercise, $response);
-                }
-            }
-
-            // Jika ada error dari ML Service
-            if (isset($result['error'])) {
-                $response['ml_error'] = $result['error'];
-                $response['fallback_prediction'] = $result['fallback_prediction'] ?? null;
-            }
-
-            Log::debug('Frame processed', [
-                'processing_time_ms' => $processingTime,
-                'feedback' => $userFeedback,
-                'confidence' => $response['confidence_score'],
-                'success' => $result['success'] ?? false
-            ]);
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('Camera frame processing error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'user_id' => Auth::id() ?? 'unknown',
-                'expected_exercise' => $request->expected_exercise ?? 'unknown'
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'error' => 'Frame processing failed: ' . $e->getMessage(),
-                'fallback_feedback' => 'Processing frame...',
-                'frame_info' => [
-                    'timestamp' => $request->frame_timestamp ?? microtime(true),
-                    'index' => $request->frame_index ?? 0,
-                    'error' => $e->getMessage()
-                ]
-            ], 500);
-        }
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
     }
 
+    try {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $exerciseType = $request->exercise_type;
+        $workoutId = $request->workout_id;
+        $sessionId = $request->session_id ?? 'session_' . uniqid();
+        $targetReps = $request->target_reps ?? 12;
+        $sets = $request->sets ?? 3;
+        
+        $workout = Workout::find($workoutId);
+        if (!$workout) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Workout not found'
+            ], 404);
+        }
+
+        // Initialize exercise session
+        $sessionData = [
+            'session_id' => $sessionId,
+            'user_id' => $user->id,
+            'workout_id' => $workoutId,
+            'workout_name' => $workout->nama_workout,
+            'exercise_type' => $exerciseType,
+            'exercise_name' => $this->getExerciseName($exerciseType),
+            'start_time' => now()->format('Y-m-d H:i:s'),
+            'start_timestamp' => microtime(true),
+            'target_reps' => $targetReps,
+            'target_sets' => $sets,
+            'current_set' => 1,
+            'current_rep' => 0,
+            'completed_reps' => 0,
+            'completed_sets' => 0,
+            'form_history' => [],
+            'rep_history' => [],
+            'frame_count' => 0,
+            'ml_health' => $this->mlService->checkHealth(),
+            'status' => 'active',
+            'created_at' => now()->format('Y-m-d H:i:s'),
+            'updated_at' => now()->format('Y-m-d H:i:s')
+        ];
+
+        // Save session data
+        $this->saveExerciseSession($sessionId, $sessionData);
+
+        // Call ML service to reset counters for this exercise
+        $mlInput = [
+            'mode' => 'reset_counters'
+        ];
+        $this->mlService->callPredictScript($mlInput);
+
+        Log::info('Exercise detection started', [
+            'user_id' => $user->id,
+            'workout_id' => $workoutId,
+            'exercise_type' => $exerciseType,
+            'session_id' => $sessionId,
+            'target_reps' => $targetReps,
+            'sets' => $sets
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Exercise detection started',
+            'data' => [
+                'session' => [
+                    'session_id' => $sessionId,
+                    'exercise_type' => $exerciseType,
+                    'exercise_name' => $sessionData['exercise_name'],
+                    'start_time' => $sessionData['start_time'],
+                    'target_reps' => $targetReps,
+                    'target_sets' => $sets,
+                    'current_set' => 1,
+                    'current_rep' => 0
+                ],
+                'exercise_info' => $this->getExerciseInfo($exerciseType)
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Start exercise detection error: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to start exercise detection',
+            'error' => env('APP_DEBUG') ? $e->getMessage() : 'Internal server error'
+        ], 500);
+    }
+}
+
+/**
+ * Process real-time exercise detection with rep counting
+ * Endpoint: POST /api/detailworkout/detect-realtime
+ */
+public function detectRealTime(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'frame_data' => 'required|array',
+        'exercise_type' => 'required|string|in:pushup,shoulder_press,t_bar_row',
+        'workout_id' => 'required|exists:workouts,id',
+        'session_id' => 'required|string',
+        'frame_index' => 'required|integer',
+        'reset_counter' => 'nullable|boolean'
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    try {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $exerciseType = $request->exercise_type;
+        $workoutId = $request->workout_id;
+        $sessionId = $request->session_id;
+        $frameData = $request->frame_data;
+        $frameIndex = $request->frame_index;
+        
+        $workout = Workout::find($workoutId);
+        if (!$workout) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Workout not found'
+            ], 404);
+        }
+
+        // Load session data
+        $sessionData = $this->getExerciseSession($sessionId);
+        if (!$sessionData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session not found'
+            ], 404);
+        }
+
+        // Verify session belongs to user
+        if ($sessionData['user_id'] != $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session access denied'
+            ], 403);
+        }
+
+        // Verify exercise type matches
+        if ($sessionData['exercise_type'] != $exerciseType) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Exercise type mismatch'
+            ], 400);
+        }
+
+        // Reset counter if requested
+        if ($request->reset_counter) {
+            $this->resetRepCounter($sessionId);
+        }
+
+        // Standardize frame data
+        $standardizedData = $this->standardizeFrameDataForMl($frameData);
+        
+        // Prepare ML input
+        $mlInput = [
+            'mode' => 'realtime_frame',
+            'frame_data' => $standardizedData,
+            'expected_exercise' => $exerciseType
+        ];
+
+        // Call ML service
+        $startTime = microtime(true);
+        $mlResult = $this->mlService->callPredictScript($mlInput);
+        $processingTime = round((microtime(true) - $startTime) * 1000, 2);
+
+        // Validate result
+        if (!$mlResult['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $mlResult['error'] ?? 'ML service error',
+                'fallback_prediction' => $this->getFallbackPrediction($exerciseType)
+            ], 500);
+        }
+
+        // Extract frame analysis
+        $frameAnalysis = $mlResult['frame_analysis'];
+        $repInfo = $frameAnalysis['rep_detection'];
+        
+        // Update session
+        $this->updateExerciseSession(
+            $sessionId, 
+            $frameAnalysis, 
+            $frameIndex,
+            $processingTime
+        );
+
+        // Check if rep completed
+        $repCompleted = $repInfo['rep_completed'] ?? false;
+        $totalReps = $repInfo['total_reps'] ?? 0;
+        
+        if ($repCompleted) {
+            // Save completed rep
+            $this->saveCompletedRep(
+                $user->id,
+                $workout->id,
+                $exerciseType,
+                $totalReps,
+                $frameAnalysis,
+                $sessionData
+            );
+            
+            // Update session rep count
+            $sessionData = $this->getExerciseSession($sessionId);
+        }
+
+        // Generate user feedback
+        $userFeedback = $this->generateExerciseFeedback($frameAnalysis, $exerciseType, $totalReps);
+        
+        // Check if set completed
+        $setCompleted = false;
+        if ($totalReps >= $sessionData['target_reps']) {
+            $setCompleted = $this->completeSet($sessionId, $workoutId, $exerciseType, $totalReps);
+        }
+
+        $response = [
+            'success' => true,
+            'detection_result' => [
+                'exercise_type' => $exerciseType,
+                'exercise_name' => $this->getExerciseName($exerciseType),
+                'is_correct_form' => $frameAnalysis['form_check']['is_correct'] ?? false,
+                'confidence_score' => $frameAnalysis['confidence_score'] ?? 0,
+                'current_form' => $frameAnalysis['prediction']['prediction_label'] ?? 'unknown',
+                'feedback' => $userFeedback,
+                'rep_info' => [
+                    'rep_completed' => $repCompleted,
+                    'total_reps' => $totalReps,
+                    'target_reps' => $sessionData['target_reps'],
+                    'rep_in_progress' => $repInfo['rep_in_progress'] ?? false,
+                    'current_state' => $repInfo['current_rep_state'] ?? 'none'
+                ],
+                'set_info' => [
+                    'current_set' => $sessionData['current_set'],
+                    'target_sets' => $sessionData['target_sets'],
+                    'set_completed' => $setCompleted
+                ],
+                'frame_info' => [
+                    'index' => $frameIndex,
+                    'processing_time_ms' => $processingTime,
+                    'timestamp' => now()->format('H:i:s')
+                ],
+                'session_stats' => [
+                    'total_frames' => $sessionData['frame_count'] ?? 0,
+                    'total_reps' => $totalReps,
+                    'form_accuracy' => $this->calculateFormAccuracy($sessionData)
+                ]
+            ]
+        ];
+
+        Log::info('Real-time detection successful', [
+            'user_id' => $user->id,
+            'exercise_type' => $exerciseType,
+            'rep_completed' => $repCompleted,
+            'total_reps' => $totalReps,
+            'confidence' => $frameAnalysis['confidence_score'] ?? 0
+        ]);
+
+        return response()->json($response);
+
+    } catch (\Exception $e) {
+        Log::error('Real-time detection error: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'error' => 'Real-time detection failed',
+            'fallback_feedback' => $this->getFallbackFeedback($request->exercise_type)
+        ], 500);
+    }
+}
+
+/**
+ * Get exercise session status
+ * Endpoint: GET /api/detailworkout/exercise-session/{session_id}
+ */
+public function getExerciseSessionStatus(Request $request, $sessionId)
+{
+    try {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $sessionData = $this->getExerciseSession($sessionId);
+        if (!$sessionData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session not found'
+            ], 404);
+        }
+
+        if ($sessionData['user_id'] != $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session access denied'
+            ], 403);
+        }
+
+        $elapsedSeconds = microtime(true) - $sessionData['start_timestamp'];
+        $exerciseName = $this->getExerciseName($sessionData['exercise_type']);
+        
+        // Calculate statistics
+        $formHistory = $sessionData['form_history'] ?? [];
+        $correctForms = array_filter($formHistory, function($item) {
+            return $item['is_correct'] ?? false;
+        });
+        $formAccuracy = count($formHistory) > 0 ? 
+            round((count($correctForms) / count($formHistory)) * 100, 1) : 0;
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'session' => [
+                    'session_id' => $sessionId,
+                    'exercise_type' => $sessionData['exercise_type'],
+                    'exercise_name' => $exerciseName,
+                    'start_time' => $sessionData['start_time'],
+                    'elapsed_seconds' => round($elapsedSeconds, 1),
+                    'status' => $sessionData['status']
+                ],
+                'progress' => [
+                    'current_rep' => $sessionData['current_rep'] ?? 0,
+                    'target_reps' => $sessionData['target_reps'],
+                    'current_set' => $sessionData['current_set'],
+                    'target_sets' => $sessionData['target_sets'],
+                    'completed_reps' => $sessionData['completed_reps'] ?? 0,
+                    'completed_sets' => $sessionData['completed_sets'] ?? 0
+                ],
+                'statistics' => [
+                    'frame_count' => $sessionData['frame_count'] ?? 0,
+                    'form_accuracy' => $formAccuracy,
+                    'average_confidence' => $this->calculateAverageConfidence($sessionData),
+                    'rep_history' => $sessionData['rep_history'] ?? []
+                ]
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Get exercise session status error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to get session status',
+            'error' => env('APP_DEBUG') ? $e->getMessage() : 'Internal server error'
+        ], 500);
+    }
+}
+
+// ============================================
+// HELPER METHODS
+// ============================================
+
+private function getExerciseName($exerciseType)
+{
+    $names = [
+        'pushup' => 'Push Up',
+        'shoulder_press' => 'Shoulder Press',
+        't_bar_row' => 'T Bar Row'
+    ];
+    
+    return $names[$exerciseType] ?? 'Unknown Exercise';
+}
+
+private function getExerciseInfo($exerciseType)
+{
+    $info = [
+        'pushup' => [
+            'name' => 'Push Up',
+            'description' => 'Bodyweight exercise for chest, shoulders and triceps',
+            'muscle_groups' => ['Chest', 'Shoulders', 'Triceps'],
+            'instructions' => [
+                'Start in plank position with hands shoulder-width apart',
+                'Lower your body until chest nearly touches the floor',
+                'Push back up to starting position',
+                'Keep body straight from head to heels'
+            ]
+        ],
+        'shoulder_press' => [
+            'name' => 'Shoulder Press',
+            'description' => 'Weight training exercise for shoulders and triceps',
+            'muscle_groups' => ['Shoulders', 'Triceps', 'Upper Chest'],
+            'instructions' => [
+                'Sit on bench with back straight',
+                'Hold barbell/dumbbells at shoulder height',
+                'Press weights overhead until arms are straight',
+                'Lower with control',
+                'Keep elbows in front of body'
+            ]
+        ],
+        't_bar_row' => [
+            'name' => 'T Bar Row',
+            'description' => 'Back exercise targeting latissimus dorsi and biceps',
+            'muscle_groups' => ['Back', 'Biceps', 'Rear Delts'],
+            'instructions' => [
+                'Stand over T-bar row machine',
+                'Grip handles with both hands',
+                'Pull weight toward your chest',
+                'Squeeze back muscles at top position',
+                'Lower with control',
+                'Keep back straight throughout movement'
+            ]
+        ]
+    ];
+    
+    return $info[$exerciseType] ?? [];
+}
+
+private function saveExerciseSession($sessionId, $data)
+{
+    $filename = $this->sessionStoragePath . '/exercise_' . $sessionId . '.json';
+    file_put_contents($filename, json_encode($data, JSON_PRETTY_PRINT));
+}
+
+private function getExerciseSession($sessionId)
+{
+    $filename = $this->sessionStoragePath . '/exercise_' . $sessionId . '.json';
+    if (file_exists($filename)) {
+        $data = json_decode(file_get_contents($filename), true);
+        return $data ?: null;
+    }
+    return null;
+}
+
+private function updateExerciseSession($sessionId, $frameAnalysis, $frameIndex, $processingTime)
+{
+    $sessionData = $this->getExerciseSession($sessionId);
+    if (!$sessionData) return;
+
+    $sessionData['frame_count'] = ($sessionData['frame_count'] ?? 0) + 1;
+    $sessionData['updated_at'] = now()->format('Y-m-d H:i:s');
+    
+    // Add form history
+    $formHistory = $sessionData['form_history'] ?? [];
+    $formHistory[] = [
+        'frame_index' => $frameIndex,
+        'timestamp' => microtime(true),
+        'is_correct' => $frameAnalysis['form_check']['is_correct'] ?? false,
+        'confidence' => $frameAnalysis['confidence_score'] ?? 0,
+        'feedback' => $frameAnalysis['form_check']['feedback'] ?? '',
+        'processing_time_ms' => $processingTime
+    ];
+    $sessionData['form_history'] = $formHistory;
+
+    $this->saveExerciseSession($sessionId, $sessionData);
+}
+
+private function generateExerciseFeedback($frameAnalysis, $exerciseType, $totalReps)
+{
+    $feedback = $frameAnalysis['form_check']['feedback'] ?? '';
+    
+    if ($frameAnalysis['form_check']['is_correct'] ?? false) {
+        $confidence = $frameAnalysis['confidence_score'] ?? 0;
+        if ($confidence > 0.9) {
+            $feedback = "Excellent form!";
+        } elseif ($confidence > 0.7) {
+            $feedback = "Good form!";
+        } else {
+            $feedback = "Form OK, keep going!";
+        }
+    }
+    
+    // Add rep count feedback
+    if ($totalReps > 0) {
+        $feedback .= " Reps: {$totalReps}";
+    }
+    
+    return $feedback;
+}
+
+private function saveCompletedRep($userId, $workoutId, $exerciseType, $repCount, $frameAnalysis, $sessionData)
+{
+    Log::info('Rep completed', [
+        'user_id' => $userId,
+        'workout_id' => $workoutId,
+        'exercise_type' => $exerciseType,
+        'rep_count' => $repCount,
+        'confidence' => $frameAnalysis['confidence_score'] ?? 0,
+        'form_correct' => $frameAnalysis['form_check']['is_correct'] ?? false
+    ]);
+}
+
+private function completeSet($sessionId, $workoutId, $exerciseType, $totalReps)
+{
+    $sessionData = $this->getExerciseSession($sessionId);
+    if (!$sessionData) return false;
+
+    $currentSet = $sessionData['current_set'] ?? 1;
+    $targetSets = $sessionData['target_sets'] ?? 3;
+    
+    if ($currentSet < $targetSets) {
+        // Move to next set
+        $sessionData['current_set'] = $currentSet + 1;
+        $sessionData['completed_sets'] = ($sessionData['completed_sets'] ?? 0) + 1;
+        $sessionData['completed_reps'] = ($sessionData['completed_reps'] ?? 0) + $totalReps;
+        $sessionData['updated_at'] = now()->format('Y-m-d H:i:s');
+        
+        // Reset rep counter for new set
+        $sessionData['current_rep'] = 0;
+        
+        $this->saveExerciseSession($sessionId, $sessionData);
+        
+        Log::info('Set completed', [
+            'session_id' => $sessionId,
+            'exercise_type' => $exerciseType,
+            'set_number' => $currentSet,
+            'total_reps' => $totalReps
+        ]);
+        
+        return true;
+    }
+    
+    return false;
+}
+
+private function calculateFormAccuracy($sessionData)
+{
+    $formHistory = $sessionData['form_history'] ?? [];
+    if (empty($formHistory)) return 0;
+    
+    $correctCount = 0;
+    foreach ($formHistory as $item) {
+        if ($item['is_correct'] ?? false) {
+            $correctCount++;
+        }
+    }
+    
+    return round(($correctCount / count($formHistory)) * 100, 1);
+}
+
+private function calculateAverageConfidence($sessionData)
+{
+    $formHistory = $sessionData['form_history'] ?? [];
+    if (empty($formHistory)) return 0;
+    
+    $totalConfidence = 0;
+    foreach ($formHistory as $item) {
+        $totalConfidence += $item['confidence'] ?? 0;
+    }
+    
+    return round($totalConfidence / count($formHistory), 3);
+}
     /**
      * Process batch of frames for exercise analysis
      * Endpoint: POST /api/detailworkout/process-batch-frames
@@ -1921,4 +2461,6 @@ class DetailWorkoutController extends Controller
             ], 500);
         }
     }
+
+    
 }

@@ -1,43 +1,29 @@
 @echo off
-echo Menginstal dependensi Python untuk CHATBOT GYMZ AI...
-cd /d "D:\coba\gym-genz-api\scripts"
+echo Installing Python dependencies for GYMZ Chatbot...
+echo.
 
-REM ============================
-REM Buat virtual environment
-REM ============================
-if not exist "venv" (
-    echo Membuat virtual environment...
-    python -m venv venv
+REM Upgrade pip
+python -m pip install --upgrade pip
+
+REM Install basic dependencies
+pip install numpy scipy scikit-learn
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+pip install sentence-transformers
+pip install transformers
+pip install tensorflow
+pip install pymysql
+pip install python-dotenv
+pip install pickle5
+
+REM Try to install faiss for Windows
+pip install faiss-cpu-windows
+
+REM If above fails, try alternative
+if errorlevel 1 (
+    echo faiss-cpu-windows failed, trying faiss-cpu...
+    pip install faiss-cpu
 )
 
-REM ============================
-REM Aktifkan virtual environment
-REM ============================
-call venv\Scripts\activate.bat
-
-REM ============================
-REM Upgrade pip
-REM ============================
-pip install --upgrade pip
-
-REM ============================
-REM Install chatbot dependencies
-REM ============================
-pip install ^
-langchain ^
-langchain-community ^
-langchain-huggingface ^
-faiss-cpu ^
-sentence-transformers ^
-ollama ^
-python-dotenv
-
-REM ============================
-REM Selesai
-REM ============================
 echo.
-echo ============================================
-echo Instalasi CHATBOT GYMZ AI selesai!
-echo Pastikan Ollama sudah terinstall dan berjalan
-echo ============================================
+echo Installation complete!
 pause

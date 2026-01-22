@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="stylesheet" href="https://hemicranic-justus-jauntily.ngrok-free.dev/css/auth.css">
     @stack('styles')
 </head>
 <body>
